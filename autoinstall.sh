@@ -202,6 +202,14 @@ run_inference() {
     success "Inference completed."
 }
 
+# Check Point Detail
+check_point() {
+    echo "Detail Point Your Point"
+    echo "============================"
+    $AIOS_CLI hive points
+    
+}
+
 # Chek status daemon
 status_daemon() {
     
@@ -236,7 +244,8 @@ main_menu() {
     echo "9. Login to Hive"
     echo "10. Select Tier"
     echo "11. Run Inference"
-    echo "12. Exit"
+    echo "12". Check Detail Point
+    echo "13. Exit"
 
     read -p "Select an option (1-12): " choice
     case $choice in
@@ -251,7 +260,8 @@ main_menu() {
         9) login_hive ;;
         10) select_tier ;;
         11) run_inference ;;
-        12) success "Goodbye!"; exit 0 ;;
+        12) check_point ;;
+        13) success "Goodbye!"; exit 0 ;;
         *) warning "Invalid option. Please select a valid choice." ;;
     esac
     main_menu
