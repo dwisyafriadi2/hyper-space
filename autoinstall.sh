@@ -98,19 +98,70 @@ show_models() {
     $AIOS_CLI models available || warning "Failed to fetch available models."
 }
 
-# Add model
+# Add Model
 add_model() {
-    read -p "Enter the model to install (e.g., hf:TheBloke/Mistral-7B-Instruct-v0.1-GGUF): " model_name
-    $AIOS_CLI models add "$model_name" || warning "Failed to add model $model_name."
-    success "Model $model_name added successfully."
+    # Ask the user if they want to add the default model
+    read -p "Do you want to add the default model? (y/n): " choice
+
+    case "$choice" in
+        [Yy]*)
+            # User selected default model
+            default_model="hf:TheBloke/Mistral-7B-Instruct-v0.1-GGUF:mistral-7b-instruct-v0.1.Q4_K_S.gguf"
+            success "Adding default model: $default_model"
+            $AIOS_CLI models add "$default_model" || warning "Failed to add default model."
+            success "Default model added successfully."
+            ;;
+        [Nn]*)
+            # User selected to enter a custom model
+            read -p "Enter the model to install (e.g., hf:TheBloke/Mistral-7B-Instruct-v0.1-GGUF:mistral-7b-instruct-v0.1.Q4_K_S.gguf): " model_name
+            $AIOS_CLI models add "$model_name" || warning "Failed to add model $model_name."
+            success "Model $model_name added successfully."
+            ;;
+        *)
+            # Invalid input
+            warning "Invalid choice. Please enter 'y' or 'n'."
+            add_model
+            ;;
+    esac
 }
+
 
 # Setup Hive (Import keys and connect)
 setup_hive() {
     success "Configuring Hive..."
-    $AIOS_CLI hive import-keys ./my.pem || warning "Failed to import keys."
-    success "Keys imported successfully."
+
+    # Ask if the user already has a private key
+    read -p "Do you have a private key before? (y/n): " choice
+
+    case "$choice" in
+        [Yy]*)
+            # User has a private key
+            read -p "Paste your private key: " private_key
+
+            # Save the private key to a file
+            echo "$private_key" > ./my.pem
+            chmod 600 ./my.pem  # Secure the key file
+            success "Private key saved successfully to ./my.pem"
+
+            # Import the saved key
+            $AIOS_CLI hive import-keys ./my.pem || warning "Failed to import private key."
+            success "Private key imported successfully."
+            ;;
+        
+        [Nn]*)
+            # No private key, run default import command
+            $AIOS_CLI hive import-keys ./my.pem || warning "Failed to import default private key."
+            success "Default private key imported successfully."
+            ;;
+
+        *)
+            # Invalid input
+            warning "Invalid choice. Please enter 'y' or 'n'."
+            setup_hive
+            ;;
+    esac
 }
+
 
 # Login to Hive
 login_hive() {
