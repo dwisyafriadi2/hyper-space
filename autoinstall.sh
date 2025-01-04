@@ -70,7 +70,7 @@ start_daemon() {
         fi
     fi
     success "Starting aiOS CLI daemon in the background..."
-    nohup $AIOS_CLI start > "$LOG_FILE" 2>&1 &
+    nohup $AIOS_CLI start --connect > "$LOG_FILE" 2>&1 &
     echo $! > "$PID_FILE"
     sleep 2
     if ps -p $(cat "$PID_FILE") > /dev/null 2>&1; then
