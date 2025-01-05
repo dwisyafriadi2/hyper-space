@@ -194,13 +194,154 @@ select_tier() {
     success "Tier $TIER selected successfully."
 }
 
-# Run Inference with Prompt
+# Run Inference with Default or Custom Model and Prompt
+# Run Inference with Default or Custom Model and Prompt
 run_inference() {
-    read -p "Enter the model to use for inference: " model_name
-    read -p "Enter your prompt: " user_prompt
-    $AIOS_CLI infer --model "$model_name" --prompt "$user_prompt" || warning "Failed to run inference."
-    success "Inference completed."
+    success "Starting Inference..."
+
+    # Array of 100 predefined prompts
+    default_prompts=(
+        "Can you explain how to write an HTTP server in Rust?"
+        "What is the difference between AI and Machine Learning?"
+        "How does blockchain technology work?"
+        "Explain the basics of Kubernetes."
+        "What are the core principles of object-oriented programming?"
+        "Describe the TCP/IP networking model."
+        "How do neural networks function in AI?"
+        "What is the role of Docker in software development?"
+        "Explain how DNS works."
+        "What is the difference between HTTP and HTTPS?"
+        "Describe the Agile methodology in project management."
+        "Explain recursion with an example."
+        "What is the difference between compiled and interpreted languages?"
+        "How does the internet protocol (IP) address work?"
+        "Explain the basics of cryptography."
+        "What is a REST API?"
+        "How do you secure a Linux server?"
+        "Explain how load balancing works."
+        "What are microservices, and how do they differ from monolithic architecture?"
+        "Describe how a database index works."
+        "Explain garbage collection in programming languages."
+        "What is the CAP theorem in distributed systems?"
+        "How do firewalls protect networks?"
+        "Explain continuous integration and continuous deployment (CI/CD)."
+        "What is virtualization in computing?"
+        "Describe the concept of caching."
+        "Explain the basics of quantum computing."
+        "How does OAuth authentication work?"
+        "What is a reverse proxy server?"
+        "Explain how SSL/TLS encryption works."
+        "What are the benefits of cloud computing?"
+        "Describe the structure of a JSON object."
+        "What is a container in Docker?"
+        "Explain how version control systems like Git work."
+        "Describe the process of data normalization."
+        "What is SQL injection, and how can it be prevented?"
+        "Explain the concept of DevOps."
+        "How does serverless architecture work?"
+        "What is a CDN (Content Delivery Network)?"
+        "Explain cross-site scripting (XSS)."
+        "Describe the role of an API Gateway."
+        "What are the key differences between PostgreSQL and MySQL?"
+        "How does pagination work in APIs?"
+        "Explain how Blockchain achieves consensus."
+        "What is the importance of DNS records?"
+        "Describe the basics of Kubernetes Pods."
+        "What is container orchestration?"
+        "Explain the concept of zero-trust security."
+        "How does NAT (Network Address Translation) work?"
+        "What is a subnet mask?"
+        "Describe the basics of SEO (Search Engine Optimization)."
+        "Explain the concept of machine learning bias."
+        "What is the difference between supervised and unsupervised learning?"
+        "How does a load balancer distribute traffic?"
+        "What are environment variables?"
+        "Explain how the Linux filesystem works."
+        "Describe the basics of multi-threading."
+        "What is latency in networks?"
+        "Explain SSL certificate pinning."
+        "Describe the structure of an HTML document."
+        "What is a hypervisor in virtualization?"
+        "How does blockchain ensure immutability?"
+        "Explain data serialization."
+        "What are JWT (JSON Web Tokens)?"
+        "How does Kubernetes handle scaling?"
+        "What are the benefits of Infrastructure as Code (IaC)?"
+        "Explain how API rate limiting works."
+        "Describe a key-value database."
+        "What is edge computing?"
+        "How does a proxy server work?"
+        "Explain the role of a data warehouse."
+        "What is data encryption at rest and in transit?"
+        "How do CDN edge nodes work?"
+        "Explain the difference between UDP and TCP."
+        "What is Elasticsearch used for?"
+        "Describe the purpose of a VPN."
+        "How does a message broker like RabbitMQ work?"
+        "What are the types of database indexes?"
+        "Explain the importance of a service mesh."
+        "What is blue-green deployment?"
+        "Describe the purpose of Helm in Kubernetes."
+        "What is OAuth2.0?"
+        "Explain how DNS caching works."
+        "What is RAID in storage systems?"
+        "Describe how CI/CD pipelines are implemented."
+        "What are cron jobs in Linux?"
+        "Explain how Kubernetes secrets work."
+        "What are Docker volumes?"
+        "What is the difference between Redis and Memcached?"
+        "Explain data replication in databases."
+        "How does Kubernetes handle high availability?"
+        "What is the purpose of Redis in caching?"
+        "Explain the concept of pub-sub messaging."
+        "What are Docker namespaces?"
+        "How does Kubernetes auto-scaling work?"
+        "Explain the basics of Python virtual environments."
+        "What is the difference between HTTPS and SSH?"
+        "Describe SQL vs NoSQL databases."
+        "What is multi-tenancy in cloud computing?"
+        "Explain the basics of data warehousing."
+        "Describe the CAP theorem in distributed systems."
+    )
+
+    # Ask if the user wants to use the default inference settings
+    read -p "Do You Want to Run Inference with Default Settings? (y/n): " choice
+
+    case "$choice" in
+        [Yy]*)
+            # Select a random prompt
+            random_index=$((RANDOM % ${#default_prompts[@]}))
+            random_prompt=${default_prompts[$random_index]}
+            default_model="hf:TheBloke/Mistral-7B-Instruct-v0.1-GGUF:mistral-7b-instruct-v0.1.Q4_K_S.gguf"
+
+            success "Using Default Model: $default_model"
+            success "Using Random Prompt: \"$random_prompt\""
+
+            $AIOS_CLI hive infer --model "$default_model" --prompt "$random_prompt" || warning "Failed to run inference with default settings."
+            success "Inference completed with default settings."
+            ;;
+        
+        [Nn]*)
+            # User selects custom model and prompt
+            read -p "Enter the model you want to use: " model_name
+            read -p "Enter your prompt: " user_prompt
+
+            success "Using Custom Model: $model_name"
+            success "Using Custom Prompt: \"$user_prompt\""
+
+            $AIOS_CLI hive infer --model "$model_name" --prompt "$user_prompt" || warning "Failed to run inference with custom settings."
+            success "Inference completed with custom settings."
+            ;;
+        
+        *)
+            # Invalid input
+            warning "Invalid choice. Please enter 'y' or 'n'."
+            run_inference
+            ;;
+    esac
 }
+
+
 
 # Check Point Detail
 check_point() {
@@ -229,6 +370,29 @@ status_daemon() {
     # fi
 }
 
+# Uninstall aiOS CLI
+uninstall_aios_cli() {
+    success "Uninstalling aiOS CLI..."
+
+    case "$PLATFORM" in
+        Linux)   
+            curl $UNINSTALL_URL | bash || error "Failed to uninstall aiOS CLI on Linux."
+            ;;
+        Mac)     
+            curl $UNINSTALL_URL | sh || error "Failed to uninstall aiOS CLI on Mac."
+            ;;
+        Windows) 
+            powershell -Command "(Invoke-WebRequest \"$UNINSTALL_URL?platform=windows\").Content | powershell -" || error "Failed to uninstall aiOS CLI on Windows."
+            ;;
+        *) 
+            error "Unsupported operating system for uninstallation."
+            ;;
+    esac
+
+    success "aiOS CLI uninstalled successfully."
+}
+
+# Main Menu
 # Main Menu
 main_menu() {
     curl -s https://raw.githubusercontent.com/dwisyafriadi2/logo/main/logo.sh | bash
@@ -244,10 +408,11 @@ main_menu() {
     echo "9. Login to Hive"
     echo "10. Select Tier"
     echo "11. Run Inference"
-    echo "12". Check Detail Point
-    echo "13. Exit"
+    echo "12. Check Detail Point"
+    echo "13. Uninstall Hyperspace"
+    echo "14. Exit"
 
-    read -p "Select an option (1-12): " choice
+    read -p "Select an option (1-14): " choice
     case $choice in
         1) detect_os; install_aios_cli; check_installation ;;
         2) start_daemon ;;
@@ -261,11 +426,13 @@ main_menu() {
         10) select_tier ;;
         11) run_inference ;;
         12) check_point ;;
-        13) success "Goodbye!"; exit 0 ;;
+        13) uninstall_aios_cli ;;
+        14) success "Goodbye!"; exit 0 ;;
         *) warning "Invalid option. Please select a valid choice." ;;
     esac
     main_menu
 }
+
 
 # Start the script
 main_menu
